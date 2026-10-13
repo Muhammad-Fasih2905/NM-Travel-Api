@@ -1,178 +1,101 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-        "title": "NM Associates & Travels API",
-        "version": "1.0.0",
-        "description": "Complete API for Travel Packages and Visa Services. Fetch all services with images.",
-        "contact": {
-            "name": "NM Associates & Travels"
-        }
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NM Associates & Travels API",
+    "version": "1.0.0",
+    "description": "Complete API for Travel Packages and Visa Services using Native MongoDB Driver."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development Server"
     },
-    "servers": [
-        {
-            "url": "http://localhost:3000",
-            "description": "Development Server"
-        },
-        {
-            "url": "https://your-app.up.railway.app",
-            "description": "Production Server (Railway)"
+    {
+      "url": "https://your-app.up.railway.app",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Services",
+      "description": "Travel Packages and Visa Services"
+    }
+  ],
+  "paths": {
+    "/api/services": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get all services",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by category"
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by country"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Search in title"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
         }
-    ],
-    "tags": [
-        {
-            "name": "Services",
-            "description": "Travel Packages and Visa Services"
-        }
-    ],
-    "paths": {
-        "/api/services": {
-            "get": {
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Get all services",
-                "description": "Returns a list of all travel packages and visa services. Supports filtering by category, country, and search.",
-                "parameters": [
-                    {
-                        "name": "category",
-                        "in": "query",
-                        "description": "Filter by category (e.g., 'Tour Package', 'Visa Services')",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "country",
-                        "in": "query",
-                        "description": "Filter by country name",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "Search in service title",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "count": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Service"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/services/{id}": {
-            "get": {
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Get service by ID",
-                "description": "Returns a single service by its unique ID.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "description": "Service ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "data": {
-                                            "$ref": "#/components/schemas/Service"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Service not found"
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "Service": {
+      },
+      "post": {
+        "tags": ["Services"],
+        "summary": "Create a new service",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer"
-                    },
-                    "title": {
-                        "type": "string"
-                    },
-                    "category": {
-                        "type": "string"
-                    },
-                    "countries": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "duration": {
-                        "type": "string"
-                    },
-                    "price": {
-                        "type": "string"
-                    },
-                    "price_note": {
-                        "type": "string"
-                    },
-                    "includes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "image_url": {
-                        "type": "string"
-                    }
+                  "title": { "type": "string" },
+                  "category": { "type": "string" },
+                  "price": { "type": "string" },
+                  "duration": { "type": "string" },
+                  "includes": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "image_url": { "type": "string" }
                 }
+              }
             }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" }
         }
+      }
+    },
+    "/api/services/{id}": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get service by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "404": { "description": "Not found" }
+        }
+      }
     }
+  }
 }
