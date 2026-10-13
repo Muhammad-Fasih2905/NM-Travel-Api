@@ -1,20 +1,22 @@
-# Use Node.js LTS (Alpine for smaller size)
 FROM node:20-alpine
 
-# Set working directory
+# 🔥 DNS Fix - MongoDB Atlas SRV records ke liye zaroori
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
 WORKDIR /app
 
-# Copy package files
+# Package files copy karein
 COPY package*.json ./
 
-# Install dependencies (production only)
+# Dependencies install karein
 RUN npm install --production
 
-# Copy source code
+# Source code copy karein
 COPY . .
 
-# Expose port
+# Port expose karein
 EXPOSE 3000
 
-# Start the app
+# Server start karein
 CMD ["npm", "start"]
