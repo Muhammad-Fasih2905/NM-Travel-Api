@@ -1,59 +1,95 @@
-const services = require('../data/services.json');
+const { getDB } = require('../config/db');
 
 // GET all services
-exports.getAllServices = (req, res) => {
-    try {
-        const { category, country, search } = req.query;
-        let filtered = [...services];
+exports.getAllServices = async (req, res) => {
+  try {
+    const db = getDB();
+    const { category, country, search } = req.query;
 
-        // Filter by category
-        if (category) {
-            filtered = filtered.filter(s =>
-                s.category.toLowerCase().includes(category.toLowerCase())
-            );
-        }
+    // Build filter query
+    const filter = {};
 
-        // Filter by country
-        if (country) {
-            filtered = filtered.filter(s =>
-                s.countries && s.countries.some(c =>
-                    c.toLowerCase().includes(country.toLowerCase())
-                )
-            );
-        }
-
-        // Search in title
-        if (search) {
-            filtered = filtered.filter(s =>
-                s.title.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-
-        res.status(200).json({
-            success: true,
-            count: filtered.length,
-            data: filtered
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+    if (category) {
+      filter.category = { $regex: category, $options: 'i' };
     }
+
+    if (country) {
+      filter.countries = { $regex: country, $options: 'i' };
+    }
+
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' };
+    }
+
+    const services = await db
+      .collection('services')
+      .find(filter)
+      .sort({ id: 1 })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      count: services.length,
+      data: services
+    });
+  } catch (error) {
+    console.error('Error in getAllServices:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 // GET single service by ID
-exports.getServiceById = (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const service = services.find(s => s.id === id);
+exports.getServiceById = async (req, res) => {
+  try {
+    const db = getDB();
+    const id = parseInt(req.params.id);
 
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: `Service with ID ${id} not found`
-            });
-        }
-
-        res.status(200).json({ success: true, data: service });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid ID format. ID must be a number.'
+      });
     }
+
+    const service = await db.collection('services').findOne({ id });
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: `Service with ID ${id} not found`
+      });
+    }
+
+    res.status(200).json({ success: true, data: service });
+  } catch (error) {
+    console.error('Error in getServiceById:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST - Add new service (optional, admin use)
+exports.createService = async (req, res) => {
+  try {
+    const db = getDB();
+    const serviceData = req.body;
+
+    // Auto-increment ID
+    const lastService = await db
+      .collection('services')
+      .findOne({}, { sort: { id: -1 } });
+    
+    const newId = lastService ? lastService.id + 1 : 1;
+    serviceData.id = newId;
+
+    const result = await db.collection('services').insertOne(serviceData);
+
+    res.status(201).json({
+      success: true,
+      message: 'Service created successfully',
+      data: { ...serviceData, _id: result.insertedId }
+    });
+  } catch (error) {
+    console.error('Error in createService:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
